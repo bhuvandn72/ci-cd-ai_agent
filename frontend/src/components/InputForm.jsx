@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useRun } from "../context/RunContext";
 
+const API_BASE = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+
 export default function InputForm() {
   const { loading, setLoading, setResult } = useRun();
   const [repoUrl, setRepoUrl] = useState("");
@@ -14,7 +16,7 @@ export default function InputForm() {
     setError("");
     setLoading(true);
     try {
-      const res = await axios.post("http://127.0.0.1:8000/run-agent", {
+      const res = await axios.post(`${API_BASE}/run-agent`, {
         repo_url: repoUrl,
         team_name: teamName,
         leader_name: leaderName
