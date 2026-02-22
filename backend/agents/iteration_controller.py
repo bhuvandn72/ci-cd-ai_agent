@@ -1,5 +1,6 @@
 import time
 import os
+from datetime import datetime, timezone
 
 from classifier import parse_failure
 from docker_runner import run_tests_in_docker
@@ -29,18 +30,24 @@ def run_iteration(repo_url, team_name, leader_name):
     iterations = 0
     ci_status = "FAILED"
     last_test_result = None
+    timeline = []
 
     for i in range(max_retries):
         iterations = i + 1
         test_result = run_tests_in_docker(clone_path)
         last_test_result = test_result
         status = test_result.get("status")
+        timeline.append({
+            "iteration": iterations,
+            "status": status,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
 
         if status == "success":
             ci_status = "PASSED"
             break
 
-        if status in ("docker_unavailable", "build_failed"):
+        if status in ("docker_unavailable", "build_failed", "no_tests"):
             ci_status = "ERROR"
             break
 
@@ -89,6 +96,7 @@ def run_iteration(repo_url, team_name, leader_name):
         "commits": commits,
         "score": score,
         "fixes": fixes,
+        "timeline": timeline,
         "clone_path": clone_path,
         "time_taken": total_time,
         "test_result": last_test_result,

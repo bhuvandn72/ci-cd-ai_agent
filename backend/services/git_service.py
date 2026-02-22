@@ -33,6 +33,14 @@ def clone_repository(repo_url):
 
 # 4️⃣ Create new branch
 def create_branch(repo, branch_name):
+    if not repo.head.is_valid():
+        if "origin/main" in [str(r) for r in repo.refs]:
+            repo.git.checkout("-b", "main", "origin/main")
+        elif "origin/master" in [str(r) for r in repo.refs]:
+            repo.git.checkout("-b", "master", "origin/master")
+        else:
+            raise ValueError("Repository has no valid HEAD or known default branch.")
+
     if branch_name in repo.heads:
         repo.git.checkout(branch_name)
     else:
